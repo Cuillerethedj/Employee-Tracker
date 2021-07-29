@@ -1,29 +1,27 @@
 //Dependencies found here
 const inquirer = require("inquirer");
-const mysql = require("mysql");
-const consoleTable = require("console.table");
-const db = require(".");
+const mysql = require("mysql2");
 
-const connection = mysql.createConnection({
+
+const db = mysql.createConnection({
   host: "localhost",
 
-  // Your port;
-  port: 3001,
+  //port: 3306,
 
   // Your username
   user: "root",
 
   // Your password
   password: "",
-  database: "company_db"
+  database: "team_db"
 });
 
-connection.connect(function(err) {
+db.connect(function(err) {
   if (err) throw err;
-  console.log("connected as id " + connection.threadId);
+  console.log("connected as id " + db.threadId);
 
   startScreen();
-  //  connection.end();//
+  //  db.end();//
 });
 
 //What the user will first see once logged into node
@@ -33,7 +31,7 @@ function startScreen() {
       type: "list",
       choices: [
         "Add department",
-        "Add role",
+        "Add roles",
         "Add employee",
         "View departments",
         "View roles",
@@ -51,7 +49,7 @@ function startScreen() {
         case "Add department":
           addDepartment();
           break;
-        case "Add role":
+        case "Add roles":
           addRole();
           break;
         case "Add employee":
@@ -91,7 +89,7 @@ function addDepartment() {
 
 
 
-        connection.query("INSERT INTO department (name) VALUES (?)", [answer.deptName] , function(err, res) {
+        db.query("INSERT INTO department (name) VALUES (?)", [answer.deptName] , function(err, res) {
             if (err) throw err;
             console.table(res)
             startScreen()
@@ -122,7 +120,7 @@ function addRole() {
     .then(function(answer) {
 
 
-      connection.query("INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)", [answer.roleName, answer.salaryTotal, answer.deptID], function(err, res) {
+      db.query("INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)", [answer.roleName, answer.salaryTotal, answer.deptID], function(err, res) {
         if (err) throw err;
         console.table(res);
         startScreen();
@@ -157,7 +155,7 @@ function addEmployee() {
     .then(function(answer) {
 
       
-      connection.query("INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)", [answer.eeFirstName, answer.eeLastName, answer.roleID, answer.managerID], function(err, res) {
+      db.query("INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)", [answer.eeFirstName, answer.eeLastName, answer.roleID, answer.managerID], function(err, res) {
         if (err) throw err;
         console.table(res);
         startScreen();
@@ -178,7 +176,7 @@ function updateEmployee() {
 
       {
         type: "input",
-        message: "What do you want to update to?",
+        message: "What role do you want to update?",
         name: "updateRole"
       }
     ])
@@ -187,7 +185,7 @@ function updateEmployee() {
       //let query = `'UPDATE employee SET role_id=${answer.updateRole} WHERE first_name= ${answer.eeUpdate}`;
       //console.log(query);
 
-      connection.query('UPDATE employee SET role_id=? WHERE first_name= ?',[answer.updateRole, answer.eeUpdate],function(err, res) {
+      db.query('UPDATE employee SET role_id=? WHERE first_name= ?',[answer.updateRole, answer.eeUpdate],function(err, res) {
         if (err) throw err;
         console.table(res);
         startScreen();
@@ -198,7 +196,7 @@ function updateEmployee() {
 function viewDepartment() {
   // select from the db
   let query = "SELECT * FROM department";
-  connection.query(query, function(err, res) {
+  db.query(query, function(err, res) {
     if (err) throw err;
     console.table(res);
     startScreen();
@@ -208,8 +206,8 @@ function viewDepartment() {
 
 function viewRoles() {
   // select from the db
-  let query = "SELECT * FROM role";
-  connection.query(query, function(err, res) {
+  let query = "SELECT * FROM roles";
+  db.query(query, function(err, res) {
     if (err) throw err;
     console.table(res);
     startScreen();
@@ -220,7 +218,7 @@ function viewRoles() {
 function viewEmployees() {
   // select from the db
   let query = "SELECT * FROM employee";
-  connection.query(query, function(err, res) {
+  db.query(query, function(err, res) {
     if (err) throw err;
     console.table(res);
     startScreen();
@@ -229,6 +227,6 @@ function viewEmployees() {
 }
 
 function quit() {
-  connection.end();
+  db.end();
   process.exit();
 }
